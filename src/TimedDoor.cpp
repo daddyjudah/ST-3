@@ -26,7 +26,7 @@ bool TimedDoor::isDoorOpened() {
 
 void TimedDoor::unlock() {
   isOpened = true;
-  adapter->Timeout();  
+  adapter->Timeout();
 }
 
 void TimedDoor::lock() {
