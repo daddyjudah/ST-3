@@ -2,11 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <cstdint>
 #include "TimedDoor.h"
-
-using ::testing::AtLeast;
-using ::testing::Exactly;
 
 class MockTimerClient : public TimerClient {
  public:
@@ -19,6 +15,7 @@ class MockDoor : public Door {
   MOCK_METHOD(void, unlock, (), (override));
   MOCK_METHOD(bool, isDoorOpened, (), (override));
 };
+
 
 class TimedDoorTest : public ::testing::Test {
  protected:
@@ -33,11 +30,12 @@ class TimedDoorTest : public ::testing::Test {
   }
 };
 
+
 TEST_F(TimedDoorTest, DoorInitiallyClosed) {
   EXPECT_FALSE(door->isDoorOpened());
 }
 
-TEST_F(TimedDoorTest, LockKeepsDoorClosed) {
+TEST_F(TimedDoorTest, LockClosesDoor) {
   door->lock();
   EXPECT_FALSE(door->isDoorOpened());
 }
@@ -45,11 +43,12 @@ TEST_F(TimedDoorTest, LockKeepsDoorClosed) {
 TEST_F(TimedDoorTest, UnlockOpensDoor) {
   try {
     door->unlock();
-  } catch (...) {}
+  } catch (...) {
+  }
   EXPECT_TRUE(door->isDoorOpened());
 }
 
-TEST_F(TimedDoorTest, TimeoutThrowsIfDoorStillOpen) {
+TEST_F(TimedDoorTest, UnlockThrowsIfStillOpen) {
   EXPECT_THROW(door->unlock(), std::runtime_error);
 }
 
@@ -57,56 +56,53 @@ TEST_F(TimedDoorTest, ThrowStateAlwaysThrows) {
   EXPECT_THROW(door->throwState(), std::runtime_error);
 }
 
-TEST(TimerTest, TimerCallsSleep) {
+TEST(TimerTest, TimerWorksWithoutError) {
   Timer t;
   MockTimerClient client;
 
   EXPECT_NO_THROW(t.tregister(0, &client));
 }
 
-TEST(AdapterTest, AdapterTriggersTimeoutLogic) {
+TEST(AdapterTest, AdapterThrowsException) {
   TimedDoor door(0);
 
-  EXPECT_THROW({
-    door.unlock();
-  }, std::runtime_error);
+  EXPECT_THROW(door.unlock(), std::runtime_error);
 }
 
-TEST(MockTest, MockTimerClientCalled) {
+TEST(MockTest, TimerClientMethodCalled) {
   MockTimerClient mock;
 
   EXPECT_CALL(mock, Timeout()).Times(1);
-
   mock.Timeout();
 }
 
-TEST(MockDoorTest, DoorInterfaceUsage) {
-  MockDoor mockDoor;
+TEST(MockDoorTest, DoorMethodsCalled) {
+  MockDoor door;
 
-  EXPECT_CALL(mockDoor, lock()).Times(1);
-  EXPECT_CALL(mockDoor, unlock()).Times(1);
+  EXPECT_CALL(door, lock()).Times(1);
+  EXPECT_CALL(door, unlock()).Times(1);
 
-  mockDoor.lock();
-  mockDoor.unlock();
+  door.lock();
+  door.unlock();
 }
 
-TEST(MockDoorTest, DoorStateCheck) {
-  MockDoor mockDoor;
+TEST(MockDoorTest, DoorReturnsState) {
+  MockDoor door;
 
-  EXPECT_CALL(mockDoor, isDoorOpened())
-      .Times(1)
+  EXPECT_CALL(door, isDoorOpened())
       .WillOnce(::testing::Return(true));
 
-  EXPECT_TRUE(mockDoor.isDoorOpened());
+  EXPECT_TRUE(door.isDoorOpened());
 }
 
-TEST_F(TimedDoorTest, MultipleLockUnlock) {
+TEST_F(TimedDoorTest, LockUnlockSequence) {
   door->lock();
   EXPECT_FALSE(door->isDoorOpened());
 
   try {
     door->unlock();
-  } catch (...) {}
+  } catch (...) {
+  }
 
   EXPECT_TRUE(door->isDoorOpened());
 }
