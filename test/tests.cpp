@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <cstdint>
 #include "TimedDoor.h"
 
 class MockTimerClient : public TimerClient {
