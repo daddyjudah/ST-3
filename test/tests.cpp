@@ -53,7 +53,6 @@ TEST_F(TimedDoorTest, TimeoutThrowsIfDoorStillOpen) {
   EXPECT_THROW(door->unlock(), std::runtime_error);
 }
 
-// 5
 TEST_F(TimedDoorTest, NoThrowIfDoorClosedBeforeTimeout) {
   door->lock();
   EXPECT_NO_THROW(door->throwState()); 
